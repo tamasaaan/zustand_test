@@ -12,6 +12,7 @@
     "raw.macro": "^0.4.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-hook-form": "^6.15.1",
     "react-postprocessing": "^1.1.4",
     "react-prism": "^4.3.2",
     "react-scripts": "3.4.3",
@@ -53,6 +54,7 @@
     "printWidth": 120
   },
   "devDependencies": {
+    "@hookform/devtools": "^2.2.1",
     "customize-cra": "^1.0.0",
     "customize-cra-react-refresh": "^1.1.0",
     "react-app-rewired": "^2.1.6",
