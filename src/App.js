@@ -1,9 +1,8 @@
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useState, useEffect} from 'react'
 import create from 'zustand'
-import {DevTool} from "@hookform/devtools";
 import {useForm} from "react-hook-form";
 
-const useApplyStore = create((set) => ({
+const useDataStore = create((set) => ({
     data: {
         person: {
             name: "aaa",
@@ -15,52 +14,65 @@ const useApplyStore = create((set) => ({
 }))
 
 let renderCount = 0
-const Counter = () => {
+
+export default function App() {
+
+    const {data, apply} = useDataStore()
+    const {register, handleSubmit, reset, getValues} = useForm({
+        defaultValues: data.person,
+    });
+    useEffect(() => {
+        const id = 1234
+        fetch(`http://127.0.0.1:3105/users/${id}`)
+            .then(response => response.json())
+            .then(res => {
+                console.log("api", res)
+                apply(res.person)
+                reset(res.person)
+            });
+    }, [apply])
 
     const [mode, updateMode] = useState("detail")
-    const {data, apply} = useApplyStore()
 
-    const method = useForm({
-        mode: "onBlur",
-        defaultValues: data,
-        shouldUnregister: false
-    })
-    const {handleSubmit, control, register, reset, getValues} = method
-
-    const onSubmit = useCallback((data) => {
-        apply(data)
+    const onSubmit = useCallback((form) => {
+        console.log("form", form)
+        apply(form)
         updateMode("detail")
-    }, [apply, updateMode])
-    renderCount++
-    console.log(mode)
+        reset(form)
+    }, [apply, updateMode, reset])
 
-    const handleReset = useCallback(() => reset(), [reset])
+    const handleReset = useCallback(() => {
+        reset(data.person)
+    }, [data, reset])
 
     console.log("data", data)
     console.log("getValues", getValues())
+    renderCount++
 
     return (
 
-        <div className="counter">
-
-            <DevTool control={control}/>
-
-            <div>
-                <span>renderCount:{renderCount}</span>
-            </div>
+        <div style={{backgroundColor: "#fff"}}>
+            {renderCount}
 
             {
                 mode === "edit" ?
 
-                    <>
-                        <div>
-                            <input name="name" ref={register}/>
-                            <input name="place" ref={register}/>
-                            <input name="age" ref={register}/>
-                            <button type={"submit"} onClick={handleSubmit(onSubmit)}>submit</button>
-                            <button onClick={handleReset}>cancel</button>
-                        </div>
-                    </>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+
+                        <input name="name" ref={register({required:true})} placeholder="First name"/>
+
+                        <input name="place" ref={register} placeholder="Last name"/>
+
+                        <select name="age" ref={register}>
+                            <option value=""/>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                        </select>
+
+                        <input type="submit"/>
+                        <button onClick={handleReset}>cancel</button>
+                    </form>
                     :
                     <>
                         <div>
@@ -74,20 +86,6 @@ const Counter = () => {
             }
 
         </div>
-    )
-
+    );
 }
 
-export default function App() {
-    return (
-        <>
-            <div className="main">
-                <div className="code">
-                    <div className="code-container">
-                        <Counter/>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
-}
